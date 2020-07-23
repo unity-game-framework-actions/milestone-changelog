@@ -1,5 +1,5 @@
-name: 'Draft'
-description: 'No description.'
+name: 'Milestone Changelog'
+description: 'Creates changelog based on milestone.'
 inputs:
   token:
     description: 'GitHub token used by action.'

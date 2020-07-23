@@ -1,3 +1,3 @@
-# draft
+# milestone-changelog
 
-No description.
+Creates changelog based on milestone.
