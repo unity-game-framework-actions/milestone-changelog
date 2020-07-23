@@ -5083,16 +5083,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(__webpack_require__(840));
 const action = __importStar(__webpack_require__(341));
+const utility = __importStar(__webpack_require__(880));
 run();
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const milestone = core.getInput('milestone', { required: true });
-            const owner = core.getInput('owner', { required: true });
-            const repo = core.getInput('repo', { required: true });
+            const repository = core.getInput('repository', { required: true });
             const config = core.getInput('config', { required: true });
             const configType = core.getInput('configType', { required: true });
-            const content = yield action.createChangelog(owner, repo, milestone, config, configType);
+            const ownerAndRepo = utility.getOwnerAndRepo(repository);
+            const content = yield action.createChangelog(ownerAndRepo.owner, ownerAndRepo.repo, milestone, config, configType);
             core.setOutput('content', content);
         }
         catch (error) {
