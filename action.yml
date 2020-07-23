@@ -5,6 +5,25 @@ inputs:
     description: 'GitHub token used by action.'
     default: ${{ github.token }}
     required: true
+  owner:
+    description: 'Owner of repository to access.'
+    default: ${{ github.context.owner }}
+    required: true
+  repo:
+    description: 'Repository where to find milestone.'
+    default: ${{ github.context.repo }}
+    required: true
+  milestone:
+    description: 'Milestone number or title.'
+    required: true
+  config:
+    description: 'Path to config with generate settings.'
+    default: .github/milestone-changelog.yml
+    required: true
+  configType:
+    description: 'Type of config representation possible value 'yaml' or 'json'.'
+    default: yaml
+    required: true
 runs:
   using: 'node12'
   main: 'dist/index.js'

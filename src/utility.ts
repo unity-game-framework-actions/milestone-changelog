@@ -6,56 +6,69 @@ import * as eol from 'eol'
 import indentString from 'indent-string'
 import objectPath from 'object-path'
 
+export async function readData(path: string, type: string): Promise<any> {
+  const value = await read(path)
+  const data = parse(value, type)
+
+  return data
+}
+
 export async function read(path: string): Promise<string> {
   const buffer = await fs.readFile(path)
 
   return buffer.toString()
 }
 
-export async function write(path: string, content: string): Promise<void> {
-  await fs.writeFile(path, content)
+export async function writeData(path: string, data: any, type: string): Promise<void> {
+  const value = format(data, type)
+
+  await write(path, value)
 }
 
-export function format(input: any, type: string): string {
+export async function write(path: string, value: string): Promise<void> {
+  await fs.writeFile(path, value)
+}
+
+export function format(value: any, type: string): string {
   switch (type) {
     case 'json':
-      return JSON.stringify(input)
+      return JSON.stringify(value)
     case 'yaml':
-      return yaml.dump(input)
+      return yaml.dump(value)
     default:
       throw `Invalid parse type: '${type}'.`
   }
 }
 
-export function parse(input: string, type: string): any {
-  if (input === '') {
+export function parse(value: string, type: string): any {
+  if (value === '') {
     return {}
   }
 
   switch (type) {
     case 'json':
-      return JSON.parse(input)
+      return JSON.parse(value)
     case 'yaml':
-      return yaml.load(input)
+      return yaml.load(value)
     default:
       throw `Invalid parse type: '${type}'.`
   }
 }
 
-export function normalize(input: string): string {
-  return eol.crlf(input)
+export function normalize(value: string): string {
+  return eol.crlf(value)
 }
 
-export function indent(input: string, count: number): string {
-  return indentString(input, count)
+export function indent(value: string, count: number): string {
+  return indentString(value, count)
 }
 
-export function getValue(input: any, path: string): any {
-  return objectPath.get(input, path)
+export function getValue(target: any, path: string): any {
+  return objectPath.get(target, path)
 }
 
-export function setValue(input: any, path: string, value: any) {
-  objectPath.set(input, path, value)
+export function setValue(target: any, path: string, value: any) {
+  objectPath.set(target, path, value)
 }
 
 export function getOwnerAndRepo(repo: string): {owner: string; repo: string} {
@@ -99,13 +112,20 @@ export async function getMilestone(owner: string, repo: string, milestoneNumberO
   }
 }
 
+export async function getMilestoneIssues(owner: string, repo: string, milestone: number, state: string, labels: string): Promise<any[]> {
+  const octokit = getOctokit()
+  const issues = await octokit.paginate(`GET /repos/${owner}/${repo}/issues?milestone=${milestone}&state=${state}&labels=${labels}`)
+
+  return issues
+}
+
 export async function updateContent(owner: string, repo: string, content: string, file: string, branch: string, message: string, user: string, email: string): Promise<void> {
   const octokit = getOctokit()
   const info = await octokit.request(`GET /repos/${owner}/${repo}/contents/${file}?ref=${branch}`)
   const base64 = Buffer.from(content).toString('base64')
   const sha = info.data.sha
 
-  const response = await octokit.repos.createOrUpdateFile({
+  await octokit.repos.createOrUpdateFile({
     owner: owner,
     repo: repo,
     path: file,
@@ -149,7 +169,7 @@ export async function getRelease(owner: string, repo: string, idOrTag: string): 
 export async function updateRelease(owner: string, repo: string, release: any): Promise<void> {
   const octokit = getOctokit()
 
-  const response = await octokit.repos.updateRelease({
+  await octokit.repos.updateRelease({
     owner: owner,
     repo: repo,
     release_id: release.id,
@@ -160,9 +180,6 @@ export async function updateRelease(owner: string, repo: string, release: any): 
     draft: release.draft,
     prerelease: release.prerelease
   })
-
-  core.info('Update Release Response')
-  core.info(JSON.stringify(response))
 }
 
 export function changeRelease(release: any, change: any): any {

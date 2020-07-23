@@ -1,0 +1,24 @@
+header: ''
+title: '### Release Notes'
+description: ''
+descriptionEmptyRelease: |
+  - No release notes.
+groups:
+- name: Added
+  state: all
+  labels: Feature
+- name: Changed
+  state: all
+  labels: Change
+- name: Deprecated
+  state: all
+  labels: Deprecation
+- name: Removed
+  state: all
+  labels: Remove
+- name: Fixed
+  state: all
+  labels: Bug
+- name: Security
+  state: all
+  labels: Security
