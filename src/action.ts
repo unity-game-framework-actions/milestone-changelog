@@ -1,7 +1,14 @@
+import * as core from '@actions/core'
 import * as utility from './utility'
 
 export async function createChangelog(owner: string, repo: string, milestoneNumberOrTitle: string, configPath: string, configType: string): Promise<string> {
   const config = utility.readData(configPath, configType)
+
+  if (core.isDebug()) {
+    core.debug('Config')
+    core.debug(JSON.stringify(config, null, 2))
+  }
+
   const content = await createChangelogContent(owner, repo, milestoneNumberOrTitle, config)
 
   return content
