@@ -8,10 +8,6 @@ import objectPath from 'object-path'
 
 export async function readData(path: string, type: string): Promise<any> {
   const value = await read(path)
-
-  core.debug('read value')
-  core.debug(value)
-
   const data = parse(value, type)
 
   return data
@@ -53,7 +49,7 @@ export function parse(value: string, type: string): any {
     case 'json':
       return JSON.parse(value)
     case 'yaml':
-      return yaml.load(value)
+      return yaml.safeLoad(value)
     default:
       throw `Invalid parse type: '${type}'.`
   }
