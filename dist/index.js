@@ -9939,6 +9939,8 @@ const object_path_1 = __importDefault(__webpack_require__(461));
 function readData(path, type) {
     return __awaiter(this, void 0, void 0, function* () {
         const value = yield read(path);
+        core.debug('read value');
+        core.debug(value);
         const data = parse(value, type);
         return data;
     });

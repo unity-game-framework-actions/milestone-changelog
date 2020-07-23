@@ -8,6 +8,10 @@ import objectPath from 'object-path'
 
 export async function readData(path: string, type: string): Promise<any> {
   const value = await read(path)
+
+  core.debug('read value')
+  core.debug(value)
+
   const data = parse(value, type)
 
   return data
