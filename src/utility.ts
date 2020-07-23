@@ -49,7 +49,7 @@ export function parse(value: string, type: string): any {
     case 'json':
       return JSON.parse(value)
     case 'yaml':
-      return yaml.safeLoad(value)
+      return yaml.load(value)
     default:
       throw `Invalid parse type: '${type}'.`
   }

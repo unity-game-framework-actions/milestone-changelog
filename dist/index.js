@@ -3759,15 +3759,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createChangelog = void 0;
-const core = __importStar(__webpack_require__(840));
 const utility = __importStar(__webpack_require__(880));
 function createChangelog(owner, repo, milestoneNumberOrTitle, configPath, configType) {
     return __awaiter(this, void 0, void 0, function* () {
-        const config = utility.readData(configPath, configType);
-        if (core.isDebug()) {
-            core.debug('Config');
-            core.debug(JSON.stringify(config, null, 2));
-        }
+        const config = yield utility.readData(configPath, configType);
         const content = yield createChangelogContent(owner, repo, milestoneNumberOrTitle, config);
         return content;
     });
@@ -9983,7 +9978,7 @@ function parse(value, type) {
         case 'json':
             return JSON.parse(value);
         case 'yaml':
-            return yaml.safeLoad(value);
+            return yaml.load(value);
         default:
             throw `Invalid parse type: '${type}'.`;
     }
