@@ -59,6 +59,17 @@ export function normalize(value: string): string {
   return eol.crlf(value)
 }
 
+export function formatValues(value: string, values: any): string {
+  const reg = new RegExp('{([^{}]+)}', 'g')
+  let match
+
+  while ((match = reg.exec(value)) !== null) {
+    value = value.replace(match[0], getValue(values, match[1]))
+  }
+
+  return value
+}
+
 export function indent(value: string, count: number): string {
   return indentString(value, count)
 }

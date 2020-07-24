@@ -3763,76 +3763,70 @@ const utility = __importStar(__webpack_require__(880));
 function createChangelog(owner, repo, milestoneNumberOrTitle, configPath, configType) {
     return __awaiter(this, void 0, void 0, function* () {
         const config = yield utility.readData(configPath, configType);
-        const content = yield createChangelogContent(owner, repo, milestoneNumberOrTitle, config);
+        const content = yield formatChangelog(owner, repo, milestoneNumberOrTitle, config);
         return content;
     });
 }
 exports.createChangelog = createChangelog;
-function createChangelogContent(owner, repo, milestoneNumberOrTitle, config) {
+function formatChangelog(owner, repo, milestoneNumberOrTitle, config) {
     return __awaiter(this, void 0, void 0, function* () {
-        let content = '';
-        const milestone = yield utility.getMilestone(owner, repo, milestoneNumberOrTitle);
-        if (config.header !== '') {
-            content += `${config.header}\n\n`;
-        }
-        if (config.title !== '') {
-            content += `${config.title}\n`;
-        }
-        if (config.description !== '') {
-            content += `\n${config.description}\n`;
-        }
-        if (milestone != null) {
-            const groups = [];
-            for (const group of config.groups) {
-                const issues = yield utility.getMilestoneIssues(owner, repo, milestone.number, group.state, group.labels);
-                if (issues.length > 0) {
-                    groups.push({
-                        name: group.name,
-                        issues: issues
-                    });
-                }
-            }
-            content += formatMilestone(milestone);
-            if (groups.length > 0) {
-                content += formatIssues(groups);
+        let format = '';
+        if (config.body !== '') {
+            const milestone = yield utility.getMilestone(owner, repo, milestoneNumberOrTitle);
+            if (milestone != null) {
+                const groups = yield getGroups(owner, repo, milestone.number, config);
+                const bodyValues = {
+                    milestone: milestone,
+                    groups: formatGroups(groups, config, milestone)
+                };
+                format += utility.formatValues(config.body, bodyValues);
             }
             else {
-                content += `\n${config.descriptionEmptyRelease}\n`;
+                format += config.empty;
             }
+            format = utility.normalize(format);
         }
-        else {
-            content += `\n${config.descriptionEmptyRelease}\n`;
-        }
-        content = utility.normalize(content);
-        return content;
+        return format;
     });
 }
-function formatMilestone(milestone) {
-    let format = '';
-    format += `- [Milestone](${milestone.html_url}?closed=1)\n\n`;
-    if (milestone.description !== '') {
-        format += `${milestone.description}\n\n`;
-    }
-    return format;
-}
-function formatIssues(groups) {
+function formatGroups(groups, config, milestone) {
     let format = '';
     for (const group of groups) {
-        format += `### ${group.name}\n`;
-        for (const issue of group.issues) {
-            format += `- ${formatIssue(issue)}\n`;
-        }
-        format += '\n';
+        const groupValues = {
+            milestone: milestone,
+            group: group,
+            issues: formatIssues(group.issues, config, milestone, group)
+        };
+        format += utility.formatValues(config.group, groupValues);
     }
     return format;
 }
-function formatIssue(issue) {
-    let format = `${issue.title} ([#${issue.number}](${issue.html_url}))`;
-    if (issue.body !== '') {
-        const body = utility.indent(issue.body, 4);
-        format += `\n${body}`;
+function formatIssues(issues, config, milestone, group) {
+    let format = '';
+    for (const issue of issues) {
+        const issueValues = {
+            milestone: milestone,
+            group: group,
+            issue: issue
+        };
+        format += utility.formatValues(config.issue, issueValues);
     }
     return format;
+}
+function getGroups(owner, repo, number, config) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const groups = [];
+        for (const group of config.groups) {
+            const issues = yield utility.getMilestoneIssues(owner, repo, number, group.state, group.labels);
+            if (issues.length > 0) {
+                groups.push({
+                    name: group.name,
+                    issues: issues
+                });
+            }
+        }
+        return groups;
+    });
 }
 
 
@@ -9923,7 +9917,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.dispatch = exports.changeRelease = exports.updateRelease = exports.getRelease = exports.updateContent = exports.getMilestoneIssues = exports.getMilestone = exports.getOctokit = exports.getOwnerAndRepo = exports.setValue = exports.getValue = exports.indent = exports.normalize = exports.parse = exports.format = exports.write = exports.writeData = exports.read = exports.readData = void 0;
+exports.dispatch = exports.changeRelease = exports.updateRelease = exports.getRelease = exports.updateContent = exports.getMilestoneIssues = exports.getMilestone = exports.getOctokit = exports.getOwnerAndRepo = exports.setValue = exports.getValue = exports.indent = exports.formatValues = exports.normalize = exports.parse = exports.format = exports.write = exports.writeData = exports.read = exports.readData = void 0;
 const core = __importStar(__webpack_require__(840));
 const github = __importStar(__webpack_require__(837));
 const fs_1 = __webpack_require__(747);
@@ -9988,6 +9982,15 @@ function normalize(value) {
     return eol.crlf(value);
 }
 exports.normalize = normalize;
+function formatValues(value, values) {
+    const reg = new RegExp('{([^{}]+)}', 'g');
+    let match;
+    while ((match = reg.exec(value)) !== null) {
+        value = value.replace(match[0], getValue(values, match[1]));
+    }
+    return value;
+}
+exports.formatValues = formatValues;
 function indent(value, count) {
     return indent_string_1.default(value, count);
 }

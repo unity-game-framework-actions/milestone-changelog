@@ -2,93 +2,80 @@ import * as utility from './utility'
 
 export async function createChangelog(owner: string, repo: string, milestoneNumberOrTitle: string, configPath: string, configType: string): Promise<string> {
   const config = await utility.readData(configPath, configType)
-  const content = await createChangelogContent(owner, repo, milestoneNumberOrTitle, config)
+  const content = await formatChangelog(owner, repo, milestoneNumberOrTitle, config)
 
   return content
 }
 
-async function createChangelogContent(owner: string, repo: string, milestoneNumberOrTitle: string, config: any): Promise<string> {
-  let content = ''
-  const milestone = await utility.getMilestone(owner, repo, milestoneNumberOrTitle)
-
-  if (config.header !== '') {
-    content += `${config.header}\n\n`
-  }
-
-  if (config.title !== '') {
-    content += `${config.title}\n`
-  }
-
-  if (config.description !== '') {
-    content += `\n${config.description}\n`
-  }
-
-  if (milestone != null) {
-    const groups = []
-
-    for (const group of config.groups) {
-      const issues = await utility.getMilestoneIssues(owner, repo, milestone.number, group.state, group.labels)
-
-      if (issues.length > 0) {
-        groups.push({
-          name: group.name,
-          issues: issues
-        })
-      }
-    }
-
-    content += formatMilestone(milestone)
-
-    if (groups.length > 0) {
-      content += formatIssues(groups)
-    } else {
-      content += `\n${config.descriptionEmptyRelease}\n`
-    }
-  } else {
-    content += `\n${config.descriptionEmptyRelease}\n`
-  }
-
-  content = utility.normalize(content)
-
-  return content
-}
-
-function formatMilestone(milestone: any): string {
+async function formatChangelog(owner: string, repo: string, milestoneNumberOrTitle: string, config: any): Promise<string> {
   let format = ''
 
-  format += `- [Milestone](${milestone.html_url}?closed=1)\n\n`
+  if (config.body !== '') {
+    const milestone = await utility.getMilestone(owner, repo, milestoneNumberOrTitle)
 
-  if (milestone.description !== '') {
-    format += `${milestone.description}\n\n`
+    if (milestone != null) {
+      const groups = await getGroups(owner, repo, milestone.number, config)
+      const bodyValues = {
+        milestone: milestone,
+        groups: formatGroups(groups, config, milestone)
+      }
+
+      format += utility.formatValues(config.body, bodyValues)
+    } else {
+      format += config.empty
+    }
+
+    format = utility.normalize(format)
   }
 
   return format
 }
 
-function formatIssues(groups: any[]): string {
+function formatGroups(groups: any[], config: any, milestone: any): string {
   let format = ''
 
   for (const group of groups) {
-    format += `### ${group.name}\n`
-
-    for (const issue of group.issues) {
-      format += `- ${formatIssue(issue)}\n`
+    const groupValues = {
+      milestone: milestone,
+      group: group,
+      issues: formatIssues(group.issues, config, milestone, group)
     }
 
-    format += '\n'
+    format += utility.formatValues(config.group, groupValues)
   }
 
   return format
 }
 
-function formatIssue(issue: any): string {
-  let format = `${issue.title} ([#${issue.number}](${issue.html_url}))`
+function formatIssues(issues: any[], config: any, milestone: any, group: any): string {
+  let format = ''
 
-  if (issue.body !== '') {
-    const body = utility.indent(issue.body, 4)
+  for (const issue of issues) {
+    const issueValues = {
+      milestone: milestone,
+      group: group,
+      issue: issue
+    }
 
-    format += `\n${body}`
+    format += utility.formatValues(config.issue, issueValues)
   }
 
   return format
+}
+
+async function getGroups(owner: string, repo: string, number: number, config: any): Promise<any[]> {
+  const groups = []
+
+  for (const group of config.groups) {
+    const issues = await utility.getMilestoneIssues(owner, repo, number, group.state, group.labels)
+
+    if (issues.length > 0) {
+      groups.push({
+        name: group.name,
+        issues: issues
+      })
+    }
+  }
+
+  return groups
 }

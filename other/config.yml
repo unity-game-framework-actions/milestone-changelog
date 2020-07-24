@@ -1,7 +1,20 @@
-header: ''
-title: '### Release Notes'
-description: ''
-descriptionEmptyRelease: |
+body: |
+  ### Release Notes
+
+   - [Milestone]({milestone.html_url}?closed=1)  
+      {milestone.description}
+  
+  {groups}
+
+group: |
+  ### {group.name}
+  
+  {issues}
+
+issue: |
+   - {issue.title} ([#{issue.number}]({issue.html_url}))  
+      {issue.body}
+empty: |
   - No release notes.
 groups:
 - name: Added
