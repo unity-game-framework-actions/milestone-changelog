@@ -20,6 +20,9 @@ inputs:
     description: 'Type of config representation possible value "yaml" or "json".'
     default: yaml
     required: true
+outputs:
+  result:
+    description: 'Changelog generation result.'
 runs:
   using: 'node12'
   main: 'dist/index.js'

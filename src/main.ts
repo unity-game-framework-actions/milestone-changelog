@@ -12,9 +12,9 @@ async function run(): Promise<void> {
     const configType = core.getInput('configType', {required: true})
     const ownerAndRepo = utility.getOwnerAndRepo(repository)
 
-    const content = await action.createChangelog(ownerAndRepo.owner, ownerAndRepo.repo, milestone, config, configType)
+    const result = await action.createChangelog(ownerAndRepo.owner, ownerAndRepo.repo, milestone, config, configType)
 
-    core.setOutput('content', content)
+    core.setOutput('result', result)
   } catch (error) {
     core.setFailed(error.message)
   }

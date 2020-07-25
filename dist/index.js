@@ -5094,8 +5094,8 @@ function run() {
             const config = core.getInput('config', { required: true });
             const configType = core.getInput('configType', { required: true });
             const ownerAndRepo = utility.getOwnerAndRepo(repository);
-            const content = yield action.createChangelog(ownerAndRepo.owner, ownerAndRepo.repo, milestone, config, configType);
-            core.setOutput('content', content);
+            const result = yield action.createChangelog(ownerAndRepo.owner, ownerAndRepo.repo, milestone, config, configType);
+            core.setOutput('result', result);
         }
         catch (error) {
             core.setFailed(error.message);
