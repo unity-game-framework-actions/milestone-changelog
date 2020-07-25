@@ -3813,7 +3813,7 @@ function formatIssues(issues, config, milestone, groups, group) {
             issue: issue
         };
         format += utility.formatValues(config.issue, values);
-        if (config.issueBody) {
+        if (config.issueBody && issue.body !== '') {
             const body = utility.indent(issue.body.trim(), 4);
             format += `${body}\n`;
         }
