@@ -3777,7 +3777,7 @@ function formatChangelog(owner, repo, milestoneNumberOrTitle, config) {
                 const groups = yield getGroups(owner, repo, milestone.number, config);
                 const values = {
                     milestone: milestone,
-                    groups: 'TEST' //formatGroups(groups, config, milestone)
+                    groups: formatGroups(groups, config, milestone)
                 };
                 format += utility.formatValues(config.body, values);
             }
@@ -9983,10 +9983,15 @@ function normalize(value) {
 }
 exports.normalize = normalize;
 function formatValues(value, values) {
-    const reg = new RegExp('{([^{}]+)}', 'g');
-    let match;
-    while ((match = reg.exec(value)) !== null) {
-        value = value.replace(match[0], getValue(values, match[1]));
+    const matches = value.match(new RegExp('{([^{}]+)}', 'g'));
+    if (matches != null && matches.length > 0) {
+        for (const match of matches) {
+            if (match !== '') {
+                const path = match.substr(1, match.length - 2);
+                const replace = getValue(values, path);
+                value = value.replace(match, replace);
+            }
+        }
     }
     return value;
 }

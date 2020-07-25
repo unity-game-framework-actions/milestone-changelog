@@ -60,11 +60,17 @@ export function normalize(value: string): string {
 }
 
 export function formatValues(value: string, values: any): string {
-  const reg = new RegExp('{([^{}]+)}', 'g')
-  let match
+  const matches = value.match(new RegExp('{([^{}]+)}', 'g'))
 
-  while ((match = reg.exec(value)) !== null) {
-    value = value.replace(match[0], getValue(values, match[1]))
+  if (matches != null && matches.length > 0) {
+    for (const match of matches) {
+      if (match !== '') {
+        const path = match.substr(1, match.length - 2)
+        const replace = getValue(values, path)
+
+        value = value.replace(match, replace)
+      }
+    }
   }
 
   return value

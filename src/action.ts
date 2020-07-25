@@ -17,7 +17,7 @@ async function formatChangelog(owner: string, repo: string, milestoneNumberOrTit
       const groups = await getGroups(owner, repo, milestone.number, config)
       const values = {
         milestone: milestone,
-        groups: 'TEST' //formatGroups(groups, config, milestone)
+        groups: formatGroups(groups, config, milestone)
       }
 
       format += utility.formatValues(config.body, values)
