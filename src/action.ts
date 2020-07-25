@@ -15,12 +15,12 @@ async function formatChangelog(owner: string, repo: string, milestoneNumberOrTit
 
     if (milestone != null) {
       const groups = await getGroups(owner, repo, milestone.number, config)
-      const bodyValues = {
+      const values = {
         milestone: milestone,
-        groups: formatGroups(groups, config, milestone)
+        groups: 'TEST' //formatGroups(groups, config, milestone)
       }
 
-      format += utility.formatValues(config.body, bodyValues)
+      format += utility.formatValues(config.body, values)
     } else {
       format += config.empty
     }
@@ -35,13 +35,13 @@ function formatGroups(groups: any[], config: any, milestone: any): string {
   let format = ''
 
   for (const group of groups) {
-    const groupValues = {
+    const values = {
       milestone: milestone,
       group: group,
       issues: formatIssues(group.issues, config, milestone, group)
     }
 
-    format += utility.formatValues(config.group, groupValues)
+    format += utility.formatValues(config.group, values)
   }
 
   return format
@@ -51,13 +51,13 @@ function formatIssues(issues: any[], config: any, milestone: any, group: any): s
   let format = ''
 
   for (const issue of issues) {
-    const issueValues = {
+    const values = {
       milestone: milestone,
       group: group,
       issue: issue
     }
 
-    format += utility.formatValues(config.issue, issueValues)
+    format += utility.formatValues(config.issue, values)
   }
 
   return format
