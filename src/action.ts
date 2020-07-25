@@ -17,7 +17,8 @@ async function formatChangelog(owner: string, repo: string, milestoneNumberOrTit
       const groups = await getGroups(owner, repo, milestone.number, config)
       const values = {
         milestone: milestone,
-        groups: formatGroups(groups, config, milestone)
+        groups: groups,
+        groupsFormatted: formatGroups(groups, config, milestone)
       }
 
       format += utility.formatValues(config.body, values)
@@ -37,8 +38,9 @@ function formatGroups(groups: any[], config: any, milestone: any): string {
   for (const group of groups) {
     const values = {
       milestone: milestone,
+      groups: groups,
       group: group,
-      issues: formatIssues(group.issues, config, milestone, group)
+      issuesFormatted: formatIssues(group.issues, config, milestone, groups, group)
     }
 
     format += utility.formatValues(config.group, values)
@@ -47,17 +49,24 @@ function formatGroups(groups: any[], config: any, milestone: any): string {
   return format
 }
 
-function formatIssues(issues: any[], config: any, milestone: any, group: any): string {
+function formatIssues(issues: any[], config: any, milestone: any, groups: any[], group: any): string {
   let format = ''
 
   for (const issue of issues) {
     const values = {
       milestone: milestone,
+      groups: groups,
       group: group,
       issue: issue
     }
 
     format += utility.formatValues(config.issue, values)
+
+    if (config.issueBody) {
+      const body = utility.indent(issue.body, 4)
+
+      format += body
+    }
   }
 
   return format

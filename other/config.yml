@@ -4,16 +4,16 @@ body: |
    - [Milestone]({milestone.html_url}?closed=1)  
       {milestone.description}
   
-  {groups}
-
+  {groupsFormatted}
+  
 group: |
   ### {group.name}
   
-  {issues}
-
+  {issuesFormatted}
+  
 issue: |
    - {issue.title} ([#{issue.number}]({issue.html_url}))  
-      {issue.body}
+issueBody: true
 empty: |
   - No release notes.
 groups:
