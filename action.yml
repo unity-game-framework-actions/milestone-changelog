@@ -17,8 +17,16 @@ inputs:
     default: .github/milestone-changelog.yml
     required: true
   configType:
-    description: 'Type of config representation, possible value "yaml" or "json".'
+    description: 'Type of config representation, possible values "yaml" or "json".'
     default: yaml
+    required: true
+  outputType:
+    description: 'Type of result output, possible values "action", "file" or "all".'
+    default: action
+    required: true
+  outputPath:
+    description: 'Path of output file.'
+    default: ${{ github.action }}
     required: true
 outputs:
   result:

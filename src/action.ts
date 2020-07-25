@@ -1,10 +1,7 @@
 import * as utility from './utility'
 
-export async function createChangelog(owner: string, repo: string, milestoneNumberOrTitle: string, configPath: string, configType: string): Promise<string> {
-  const config = await utility.readData(configPath, configType)
-  const content = await formatChangelog(owner, repo, milestoneNumberOrTitle, config)
-
-  return content
+export async function createChangelog(owner: string, repo: string, milestoneNumberOrTitle: string, config: any): Promise<string> {
+  return await formatChangelog(owner, repo, milestoneNumberOrTitle, config)
 }
 
 async function formatChangelog(owner: string, repo: string, milestoneNumberOrTitle: string, config: any): Promise<string> {

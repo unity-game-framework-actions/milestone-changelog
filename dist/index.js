@@ -3760,11 +3760,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createChangelog = void 0;
 const utility = __importStar(__webpack_require__(880));
-function createChangelog(owner, repo, milestoneNumberOrTitle, configPath, configType) {
+function createChangelog(owner, repo, milestoneNumberOrTitle, config) {
     return __awaiter(this, void 0, void 0, function* () {
-        const config = yield utility.readData(configPath, configType);
-        const content = yield formatChangelog(owner, repo, milestoneNumberOrTitle, config);
-        return content;
+        return yield formatChangelog(owner, repo, milestoneNumberOrTitle, config);
     });
 }
 exports.createChangelog = createChangelog;
@@ -5089,13 +5087,11 @@ run();
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
+            const repository = utility.getRepository();
             const milestone = core.getInput('milestone', { required: true });
-            const repository = core.getInput('repository', { required: true });
-            const config = core.getInput('config', { required: true });
-            const configType = core.getInput('configType', { required: true });
-            const ownerAndRepo = utility.getOwnerAndRepo(repository);
-            const result = yield action.createChangelog(ownerAndRepo.owner, ownerAndRepo.repo, milestone, config, configType);
-            core.setOutput('result', result);
+            const config = yield utility.readConfig();
+            const result = yield action.createChangelog(repository.owner, repository.repo, milestone, config);
+            utility.setOutput(result);
         }
         catch (error) {
             core.setFailed(error.message);
@@ -9924,7 +9920,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.dispatch = exports.changeRelease = exports.updateRelease = exports.getRelease = exports.updateContent = exports.getMilestoneIssues = exports.getMilestone = exports.getOctokit = exports.getOwnerAndRepo = exports.setValue = exports.getValue = exports.indent = exports.formatValues = exports.normalize = exports.parse = exports.format = exports.write = exports.writeData = exports.read = exports.readData = void 0;
+exports.dispatch = exports.changeRelease = exports.updateRelease = exports.getRelease = exports.updateContent = exports.getMilestoneIssues = exports.getMilestone = exports.getOctokit = exports.getOwnerAndRepo = exports.getRepository = exports.setValue = exports.getValue = exports.indent = exports.formatValues = exports.normalize = exports.setOutputByType = exports.setOutput = exports.parse = exports.format = exports.write = exports.writeData = exports.read = exports.readData = exports.readConfig = void 0;
 const core = __importStar(__webpack_require__(840));
 const github = __importStar(__webpack_require__(837));
 const fs_1 = __webpack_require__(747);
@@ -9932,6 +9928,14 @@ const yaml = __importStar(__webpack_require__(604));
 const eol = __importStar(__webpack_require__(638));
 const indent_string_1 = __importDefault(__webpack_require__(110));
 const object_path_1 = __importDefault(__webpack_require__(461));
+function readConfig() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const path = core.getInput('config', { required: true });
+        const type = core.getInput('configType', { required: true });
+        return yield readData(path, type);
+    });
+}
+exports.readConfig = readConfig;
 function readData(path, type) {
     return __awaiter(this, void 0, void 0, function* () {
         const value = yield read(path);
@@ -9985,6 +9989,24 @@ function parse(value, type) {
     }
 }
 exports.parse = parse;
+function setOutput(value) {
+    const type = core.getInput('outputType', { required: true });
+    setOutputByType(type, value);
+}
+exports.setOutput = setOutput;
+function setOutputByType(type, value) {
+    if (type === 'action' || type === 'all') {
+        core.setOutput('result', value);
+    }
+    else if (type === 'file' || type === 'all') {
+        const path = core.getInput('outputPath', { required: true });
+        write(path, value);
+    }
+    else {
+        throw `Invalid output type: '${type}'.`;
+    }
+}
+exports.setOutputByType = setOutputByType;
 function normalize(value) {
     return eol.crlf(value);
 }
@@ -10015,6 +10037,11 @@ function setValue(target, path, value) {
     object_path_1.default.set(target, path, value);
 }
 exports.setValue = setValue;
+function getRepository() {
+    const repository = core.getInput('repository');
+    return getOwnerAndRepo(repository);
+}
+exports.getRepository = getRepository;
 function getOwnerAndRepo(repo) {
     const split = repo.split('/');
     if (split.length < 2) {
