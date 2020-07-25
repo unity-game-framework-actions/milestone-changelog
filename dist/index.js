@@ -3814,8 +3814,8 @@ function formatIssues(issues, config, milestone, groups, group) {
         };
         format += utility.formatValues(config.issue, values);
         if (config.issueBody) {
-            const body = utility.indent(issue.body, 4);
-            format += body;
+            const body = utility.indent(issue.body.trim(), 4);
+            format += `${body}\n`;
         }
     }
     return format;
