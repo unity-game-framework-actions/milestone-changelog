@@ -6,7 +6,7 @@ inputs:
     default: ${{ github.token }}
     required: true
   repository:
-    description: 'Owner and repository name. For example, Codertocat/Hello-World.'
+    description: 'Owner and repository name. For example, "Codertocat/Hello-World".'
     default: ${{ github.repository }}
     required: true
   milestone:
@@ -17,7 +17,7 @@ inputs:
     default: .github/milestone-changelog.yml
     required: true
   configType:
-    description: 'Type of config representation possible value "yaml" or "json".'
+    description: 'Type of config representation, possible value "yaml" or "json".'
     default: yaml
     required: true
 outputs:
