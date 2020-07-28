@@ -9920,7 +9920,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.dispatch = exports.changeRelease = exports.updateRelease = exports.getRelease = exports.updateContent = exports.getMilestoneIssues = exports.getMilestone = exports.getOctokit = exports.getOwnerAndRepo = exports.getRepository = exports.setValue = exports.getValue = exports.indent = exports.formatValues = exports.normalize = exports.setOutputByType = exports.setOutput = exports.parse = exports.format = exports.write = exports.writeData = exports.read = exports.readData = exports.readConfig = void 0;
+exports.dispatch = exports.changeRelease = exports.updateRelease = exports.getReleases = exports.getRelease = exports.updateContent = exports.getMilestoneIssues = exports.getMilestone = exports.getOctokit = exports.formatDate = exports.getOwnerAndRepo = exports.getRepository = exports.setValue = exports.getValue = exports.indent = exports.formatValues = exports.normalize = exports.setOutputByType = exports.setOutput = exports.parse = exports.format = exports.write = exports.writeData = exports.read = exports.readData = exports.readConfig = void 0;
 const core = __importStar(__webpack_require__(840));
 const github = __importStar(__webpack_require__(837));
 const fs_1 = __webpack_require__(747);
@@ -10053,6 +10053,16 @@ function getOwnerAndRepo(repo) {
     };
 }
 exports.getOwnerAndRepo = getOwnerAndRepo;
+function formatDate(date, config) {
+    const format = new Intl.DateTimeFormat(config.locale, config.format);
+    const parts = format.formatToParts(date);
+    const result = {};
+    for (const part of parts) {
+        result[part.type] = part.value;
+    }
+    return result;
+}
+exports.formatDate = formatDate;
 function getOctokit() {
     const token = core.getInput('token', { required: true });
     return github.getOctokit(token);
@@ -10132,6 +10142,13 @@ function getRelease(owner, repo, idOrTag) {
     });
 }
 exports.getRelease = getRelease;
+function getReleases(owner, repo) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const octokit = getOctokit();
+        return yield octokit.paginate(`GET /repos/${owner}/${repo}/releases`);
+    });
+}
+exports.getReleases = getReleases;
 function updateRelease(owner, repo, release) {
     return __awaiter(this, void 0, void 0, function* () {
         const octokit = getOctokit();
