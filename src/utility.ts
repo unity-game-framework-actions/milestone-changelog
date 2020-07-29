@@ -62,19 +62,19 @@ export function parse(value: string, type: string): any {
   }
 }
 
-export function setOutput(value: string) {
+export async function setOutput(value: string) {
   const type = core.getInput('outputType', {required: true})
 
-  setOutputByType(type, value)
+  await setOutputByType(type, value)
 }
 
-export function setOutputByType(type: string, value: string) {
+export async function setOutputByType(type: string, value: string) {
   if (type === 'action' || type === 'all') {
     core.setOutput('result', value)
   } else if (type === 'file' || type === 'all') {
     const path = core.getInput('outputPath', {required: true})
 
-    write(path, value)
+    await write(path, value)
   } else {
     throw `Invalid output type: '${type}'.`
   }
@@ -133,12 +133,19 @@ export function getOwnerAndRepo(repo: string): {owner: string; repo: string} {
 }
 
 export function formatDate(date: Date, config: any): any {
-  const format = new Intl.DateTimeFormat(config.locale, config.format)
-  const parts = format.formatToParts(date)
   const result: any = {}
+  const keys = Object.keys(config)
 
-  for (const part of parts) {
-    result[part.type] = part.value
+  for (const key of keys) {
+    if (key !== 'locale') {
+      const options = {
+        [key]: config[key]
+      }
+
+      const format = new Intl.DateTimeFormat(config.locale, options)
+
+      result[key] = format.format(date)
+    }
   }
 
   return result
