@@ -41,6 +41,7 @@ function formatGroups(groups: any[], config: any, milestone: any): string {
     }
 
     format += utility.formatValues(config.group, values)
+    format += '\n'
   }
 
   return format

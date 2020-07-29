@@ -3798,6 +3798,7 @@ function formatGroups(groups, config, milestone) {
             issuesFormatted: formatIssues(group.issues, config, milestone, groups, group)
         };
         format += utility.formatValues(config.group, values);
+        format += '\n';
     }
     return format;
 }

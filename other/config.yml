@@ -14,7 +14,6 @@ body: |
       {milestone.description}
   
   {groupsFormatted}
-  
 
 # Group format of issues.
 # Available values:
@@ -26,7 +25,6 @@ group: |
   ### {group.name}
   
   {issuesFormatted}
-  
 
 # Issue format from group.
 # Available values:
