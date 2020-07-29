@@ -40,7 +40,7 @@ issueBody: true
 
 # Used instead of 'group' format when no any issues found for milestone.
 empty: |
-  - No release notes.
+   - No release notes.
 
 # Setting to group issues before formatting.
 # Every group has some properties.
