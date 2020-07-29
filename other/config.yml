@@ -1,3 +1,12 @@
+# Body format of release changelog.
+# Available values:
+#   milestone: Milestone object. (See about milestone object: https://docs.github.com/en/rest/reference/issues#get-a-milestone.)
+#   groups: Array of the group objects.
+#   groupsFormatted: Formatted groups as text.
+# Every group object has properties.
+# group:
+#   name: Name of group from config.
+#   issues: Array of issue objects. (See about issue object: https://docs.github.com/en/rest/reference/issues#get-an-issue.)
 body: |
   ### Release Notes
 
@@ -6,16 +15,41 @@ body: |
   
   {groupsFormatted}
   
+
+# Group format of issues.
+# Available values:
+#   milestone: Milestone object. (Same as milestone in body.)
+#   groups: Array of the group objects. (Same as groups in body.)
+#   group: Group object. (See about group in body description.)
+#   issuesFormatted: Formatted issues as text.
 group: |
   ### {group.name}
   
   {issuesFormatted}
   
+
+# Issue format from group.
+# Available values:
+#   milestone: Milestone object. (Same as milestone in body.)
+#   groups: Array of the group objects. (Same as groups in body.)
+#   group: Group object. (See about group in body description.)
+#   issue: Issue object. (See about issue object: https://docs.github.com/en/rest/reference/issues#get-an-issue.)
 issue: |
    - {issue.title} ([#{issue.number}]({issue.html_url}))  
+
+# Determines whether to include indented issue body after 'issue' format.
 issueBody: true
+
+# Used when no any issues found for milestone instead of 'group' format.
 empty: |
   - No release notes.
+
+# Setting to group issues before formatting.
+# Every group has some properties.
+# group:
+#   name: Name of group.
+#   state: State of issue to find in milestone. (Possible values: 'open', 'closed' or 'all', more about issues: https://docs.github.com/en/rest/reference/issues.)
+#   labels: List of comma separated label names used to determine whether to include issue in group. (Example: 'bug,fix'.) 
 groups:
 - name: Added
   state: all
