@@ -3770,8 +3770,8 @@ function formatChangelog(owner, repo, milestoneNumberOrTitle, config) {
     return __awaiter(this, void 0, void 0, function* () {
         let format = '';
         if (config.body !== '') {
-            const milestone = yield utility.getMilestone(owner, repo, milestoneNumberOrTitle);
-            if (milestone != null) {
+            try {
+                const milestone = yield utility.getMilestone(owner, repo, milestoneNumberOrTitle);
                 const groups = yield getGroups(owner, repo, milestone.number, config);
                 const values = {
                     milestone: milestone,
@@ -3780,7 +3780,7 @@ function formatChangelog(owner, repo, milestoneNumberOrTitle, config) {
                 };
                 format += utility.formatValues(config.body, values);
             }
-            else {
+            catch (_a) {
                 format += config.empty;
             }
             format = utility.normalize(format);
@@ -9920,7 +9920,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.dispatch = exports.changeRelease = exports.updateRelease = exports.getReleases = exports.getRelease = exports.updateContent = exports.getMilestoneIssues = exports.getMilestone = exports.getOctokit = exports.formatDate = exports.getOwnerAndRepo = exports.getRepository = exports.setValue = exports.getValue = exports.indent = exports.formatValues = exports.normalize = exports.setOutputFile = exports.setOutputAction = exports.setOutputByType = exports.setOutput = exports.parse = exports.format = exports.write = exports.writeData = exports.read = exports.readData = exports.readConfig = void 0;
+exports.dispatch = exports.updateRelease = exports.getReleases = exports.getRelease = exports.updateContent = exports.getMilestoneIssues = exports.getMilestone = exports.getOctokit = exports.formatDate = exports.getOwnerAndRepo = exports.getRepository = exports.setValue = exports.getValue = exports.indent = exports.formatValues = exports.normalize = exports.setOutputFile = exports.setOutputAction = exports.setOutputByType = exports.setOutput = exports.parse = exports.format = exports.write = exports.writeData = exports.read = exports.readData = exports.readConfig = exports.merge = void 0;
 const core = __importStar(__webpack_require__(840));
 const github = __importStar(__webpack_require__(837));
 const fs_1 = __webpack_require__(747);
@@ -9928,6 +9928,10 @@ const yaml = __importStar(__webpack_require__(604));
 const eol = __importStar(__webpack_require__(638));
 const indent_string_1 = __importDefault(__webpack_require__(110));
 const object_path_1 = __importDefault(__webpack_require__(461));
+function merge(target, source) {
+    return Object.assign(target, source);
+}
+exports.merge = merge;
 function readConfig() {
     return __awaiter(this, void 0, void 0, function* () {
         const path = core.getInput('config', { required: true });
@@ -10106,8 +10110,7 @@ function getMilestone(owner, repo, milestoneNumberOrTitle) {
                     return milestone;
                 }
             }
-            core.info(`Milestone not found by the specified number or title: '${milestoneNumberOrTitle}'.`);
-            return null;
+            throw `Milestone not found by the specified number or title: '${milestoneNumberOrTitle}'.`;
         }
     });
 }
@@ -10160,8 +10163,7 @@ function getRelease(owner, repo, idOrTag) {
                     return release;
                 }
             }
-            core.warning(`Release by the specified id or tag name not found: '${idOrTag}'.`);
-            return null;
+            throw `Release by the specified id or tag name not found: '${idOrTag}'.`;
         }
     });
 }
@@ -10190,28 +10192,6 @@ function updateRelease(owner, repo, release) {
     });
 }
 exports.updateRelease = updateRelease;
-function changeRelease(release, change) {
-    if (change.tag !== '') {
-        release.tag_name = change.tag;
-    }
-    if (change.commitish !== '') {
-        release.target_commitish = change.commitish;
-    }
-    if (change.name !== '') {
-        release.name = change.name;
-    }
-    if (change.body !== '') {
-        release.body = change.body;
-    }
-    if (change.draft !== '') {
-        release.draft = change.draft === 'true';
-    }
-    if (change.prerelease !== '') {
-        release.prerelease = change.prerelease === 'true';
-    }
-    return release;
-}
-exports.changeRelease = changeRelease;
 function dispatch(owner, repo, eventType, payload) {
     return __awaiter(this, void 0, void 0, function* () {
         const octokit = getOctokit();

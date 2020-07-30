@@ -8,9 +8,8 @@ async function formatChangelog(owner: string, repo: string, milestoneNumberOrTit
   let format = ''
 
   if (config.body !== '') {
-    const milestone = await utility.getMilestone(owner, repo, milestoneNumberOrTitle)
-
-    if (milestone != null) {
+    try {
+      const milestone = await utility.getMilestone(owner, repo, milestoneNumberOrTitle)
       const groups = await getGroups(owner, repo, milestone.number, config)
       const values = {
         milestone: milestone,
@@ -19,7 +18,7 @@ async function formatChangelog(owner: string, repo: string, milestoneNumberOrTit
       }
 
       format += utility.formatValues(config.body, values)
-    } else {
+    } catch {
       format += config.empty
     }
 
