@@ -15,6 +15,12 @@ body: |
   
   {groupsFormatted}
 
+# Used instead of 'body' format when no any issues found for milestone.
+empty: |
+  ### Release Notes
+
+   - No release notes.
+
 # Group format of issues.
 # Available values:
 #   milestone: Milestone object. (Same as milestone in body.)
@@ -37,10 +43,6 @@ issue: |
 
 # Determines whether to include indented issue body after 'issue' format.
 issueBody: true
-
-# Used instead of 'group' format when no any issues found for milestone.
-empty: |
-   - No release notes.
 
 # Setting to group issues before formatting.
 # Every group has some properties.
