@@ -6,56 +6,136 @@ import * as eol from 'eol'
 import indentString from 'indent-string'
 import objectPath from 'object-path'
 
+export function merge(target: any, source: any): any {
+  return Object.assign(target, source)
+}
+
+export async function readConfig(): Promise<any> {
+  const path = core.getInput('configPath', {required: true})
+  const type = core.getInput('configType', {required: true})
+
+  return await readData(path, type)
+}
+
+export async function readData(path: string, type: string): Promise<any> {
+  const value = await read(path)
+  const data = parse(value, type)
+
+  return data
+}
+
 export async function read(path: string): Promise<string> {
   const buffer = await fs.readFile(path)
 
   return buffer.toString()
 }
 
-export async function write(path: string, content: string): Promise<void> {
-  await fs.writeFile(path, content)
+export async function writeData(path: string, data: any, type: string): Promise<void> {
+  const value = format(data, type)
+
+  await write(path, value)
 }
 
-export function format(input: any, type: string): string {
+export async function write(path: string, value: string): Promise<void> {
+  await fs.writeFile(path, value)
+}
+
+export function format(value: any, type: string): string {
   switch (type) {
     case 'json':
-      return JSON.stringify(input)
+      return JSON.stringify(value)
     case 'yaml':
-      return yaml.dump(input)
+      return yaml.dump(value)
     default:
       throw `Invalid parse type: '${type}'.`
   }
 }
 
-export function parse(input: string, type: string): any {
-  if (input === '') {
+export function parse(value: string, type: string): any {
+  if (value === '') {
     return {}
   }
 
   switch (type) {
     case 'json':
-      return JSON.parse(input)
+      return JSON.parse(value)
     case 'yaml':
-      return yaml.load(input)
+      return yaml.load(value)
     default:
       throw `Invalid parse type: '${type}'.`
   }
 }
 
-export function normalize(input: string): string {
-  return eol.crlf(input)
+export async function setOutput(value: string) {
+  const type = core.getInput('outputType', {required: true})
+
+  await setOutputByType(type, value)
 }
 
-export function indent(input: string, count: number): string {
-  return indentString(input, count)
+export async function setOutputByType(type: string, value: string) {
+  switch (type) {
+    case 'action':
+      setOutputAction(value)
+      break
+    case 'file':
+      await setOutputFile(value)
+      break
+    case 'all':
+      setOutputAction(value)
+      await setOutputFile(value)
+      break
+    default:
+      throw `Invalid output type: '${type}'.`
+  }
 }
 
-export function getValue(input: any, path: string): any {
-  return objectPath.get(input, path)
+export function setOutputAction(value: string) {
+  core.setOutput('result', value)
 }
 
-export function setValue(input: any, path: string, value: any) {
-  objectPath.set(input, path, value)
+export async function setOutputFile(value: string) {
+  const path = core.getInput('outputPath', {required: true})
+
+  await write(path, value)
+}
+
+export function normalize(value: string): string {
+  return eol.crlf(value)
+}
+
+export function formatValues(value: string, values: any): string {
+  const matches = value.match(new RegExp('{([^{}]+)}', 'g'))
+
+  if (matches != null && matches.length > 0) {
+    for (const match of matches) {
+      if (match !== '') {
+        const path = match.substr(1, match.length - 2)
+        const replace = getValue(values, path)
+
+        value = value.replace(match, replace)
+      }
+    }
+  }
+
+  return value
+}
+
+export function indent(value: string, count: number): string {
+  return indentString(value, count)
+}
+
+export function getValue(target: any, path: string): any {
+  return objectPath.get(target, path)
+}
+
+export function setValue(target: any, path: string, value: any) {
+  objectPath.set(target, path, value)
+}
+
+export function getRepository(): {owner: string; repo: string} {
+  const repository = core.getInput('repository')
+
+  return getOwnerAndRepo(repository)
 }
 
 export function getOwnerAndRepo(repo: string): {owner: string; repo: string} {
@@ -69,6 +149,25 @@ export function getOwnerAndRepo(repo: string): {owner: string; repo: string} {
     owner: split[0],
     repo: split[1]
   }
+}
+
+export function formatDate(date: Date, config: any): any {
+  const result: any = {}
+  const keys = Object.keys(config)
+
+  for (const key of keys) {
+    if (key !== 'locale') {
+      const options = {
+        [key]: config[key]
+      }
+
+      const format = new Intl.DateTimeFormat(config.locale, options)
+
+      result[key] = format.format(date)
+    }
+  }
+
+  return result
 }
 
 export function getOctokit(): any {
@@ -93,10 +192,15 @@ export async function getMilestone(owner: string, repo: string, milestoneNumberO
       }
     }
 
-    core.info(`Milestone not found by the specified number or title: '${milestoneNumberOrTitle}'.`)
-
-    return null
+    throw `Milestone not found by the specified number or title: '${milestoneNumberOrTitle}'.`
   }
+}
+
+export async function getMilestoneIssues(owner: string, repo: string, milestone: number, state: string, labels: string): Promise<any[]> {
+  const octokit = getOctokit()
+  const issues = await octokit.paginate(`GET /repos/${owner}/${repo}/issues?milestone=${milestone}&state=${state}&labels=${labels}`)
+
+  return issues
 }
 
 export async function updateContent(owner: string, repo: string, content: string, file: string, branch: string, message: string, user: string, email: string): Promise<void> {
@@ -105,7 +209,7 @@ export async function updateContent(owner: string, repo: string, content: string
   const base64 = Buffer.from(content).toString('base64')
   const sha = info.data.sha
 
-  const response = await octokit.repos.createOrUpdateFile({
+  await octokit.repos.createOrUpdateFile({
     owner: owner,
     repo: repo,
     path: file,
@@ -140,16 +244,20 @@ export async function getRelease(owner: string, repo: string, idOrTag: string): 
       }
     }
 
-    core.warning(`Release by the specified id or tag name not found: '${idOrTag}'.`)
-
-    return null
+    throw `Release by the specified id or tag name not found: '${idOrTag}'.`
   }
+}
+
+export async function getReleases(owner: string, repo: string): Promise<any[]> {
+  const octokit = getOctokit()
+
+  return await octokit.paginate(`GET /repos/${owner}/${repo}/releases`)
 }
 
 export async function updateRelease(owner: string, repo: string, release: any): Promise<void> {
   const octokit = getOctokit()
 
-  const response = await octokit.repos.updateRelease({
+  await octokit.repos.updateRelease({
     owner: owner,
     repo: repo,
     release_id: release.id,
@@ -160,37 +268,6 @@ export async function updateRelease(owner: string, repo: string, release: any): 
     draft: release.draft,
     prerelease: release.prerelease
   })
-
-  core.info('Update Release Response')
-  core.info(JSON.stringify(response))
-}
-
-export function changeRelease(release: any, change: any): any {
-  if (change.tag !== '') {
-    release.tag_name = change.tag
-  }
-
-  if (change.commitish !== '') {
-    release.target_commitish = change.commitish
-  }
-
-  if (change.name !== '') {
-    release.name = change.name
-  }
-
-  if (change.body !== '') {
-    release.body = change.body
-  }
-
-  if (change.draft !== '') {
-    release.draft = change.draft === 'true'
-  }
-
-  if (change.prerelease !== '') {
-    release.prerelease = change.prerelease === 'true'
-  }
-
-  return release
 }
 
 export async function dispatch(owner: string, repo: string, eventType: string, payload: any): Promise<void> {

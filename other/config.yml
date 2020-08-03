@@ -1,0 +1,71 @@
+# Body format of release changelog.
+# Available values:
+#   milestone: Milestone object. (Read about milestone object: https://docs.github.com/en/rest/reference/issues#get-a-milestone.)
+#   groups: Array of the group objects. (Read about group object below.)
+#   groupsFormatted: Formatted groups as text.
+# Description of group object.
+# group:
+#   name: Name of group from config.
+#   issues: Array of issue objects. (Read about issue object: https://docs.github.com/en/rest/reference/issues#get-an-issue.)
+body: |
+  ### Release Notes
+
+   - [Milestone]({milestone.html_url}?closed=1)  
+      {milestone.description}
+  
+  {groupsFormatted}
+
+# Used instead of 'body' format when no any issues found for milestone.
+empty: |
+  ### Release Notes
+
+   - No release notes.
+
+# Group format of issues.
+# Available values:
+#   milestone: Milestone object. (Same as milestone in body.)
+#   groups: Array of the group objects. (Same as groups in body.)
+#   group: Group object. (Read about group in body description.)
+#   issuesFormatted: Formatted issues as text.
+group: |
+  ### {group.name}
+  
+  {issuesFormatted}
+
+# Issue format from group.
+# Available values:
+#   milestone: Milestone object. (Same as 'milestone' in body.)
+#   groups: Array of the group objects. (Same as 'groups' in body.)
+#   group: Group object. (Read about 'group' in body description.)
+#   issue: Issue object. (Read about issue object: https://docs.github.com/en/rest/reference/issues#get-an-issue.)
+issue: |
+   - {issue.title} ([#{issue.number}]({issue.html_url}))  
+
+# Determines whether to include indented issue body after 'issue' format.
+issueBody: true
+
+# Setting to group issues before formatting.
+# Every group has some properties.
+# group:
+#   name: Name of group.
+#   state: State of issue to find in milestone. (Possible values: 'open', 'closed' or 'all', more about issues: https://docs.github.com/en/rest/reference/issues.)
+#   labels: List of comma separated label names used to determine whether to include issue in group. (Example: 'bug,fix'.) 
+groups:
+- name: Added
+  state: all
+  labels: Feature
+- name: Changed
+  state: all
+  labels: Change
+- name: Deprecated
+  state: all
+  labels: Deprecation
+- name: Removed
+  state: all
+  labels: Remove
+- name: Fixed
+  state: all
+  labels: Bug
+- name: Security
+  state: all
+  labels: Security
