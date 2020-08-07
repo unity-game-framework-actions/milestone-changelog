@@ -5087,8 +5087,8 @@ run();
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const repository = utility.getRepository();
             const milestone = core.getInput('milestone', { required: true });
+            const repository = utility.getRepository();
             const config = yield utility.readConfig();
             const result = yield action.createChangelog(repository.owner, repository.repo, milestone, config);
             yield utility.setOutput(result);
@@ -9920,7 +9920,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.dispatch = exports.updateRelease = exports.getReleases = exports.getRelease = exports.updateContent = exports.getMilestoneIssues = exports.getMilestone = exports.getOctokit = exports.formatDate = exports.getOwnerAndRepo = exports.getRepository = exports.setValue = exports.getValue = exports.indent = exports.formatValues = exports.normalize = exports.setOutputFile = exports.setOutputAction = exports.setOutputByType = exports.setOutput = exports.parse = exports.format = exports.write = exports.writeData = exports.read = exports.readData = exports.readConfig = exports.merge = void 0;
+exports.dispatch = exports.getTagsByBranch = exports.getTags = exports.updateRelease = exports.getReleasesByBranch = exports.getReleases = exports.getRelease = exports.updateContent = exports.getMilestoneIssues = exports.getMilestone = exports.containsInBranch = exports.getOctokit = exports.formatDate = exports.getOwnerAndRepo = exports.getRepository = exports.setValue = exports.getValue = exports.indent = exports.formatValues = exports.normalize = exports.setOutputFile = exports.setOutputAction = exports.setOutputByType = exports.setOutput = exports.parse = exports.format = exports.write = exports.writeData = exports.read = exports.readData = exports.readConfig = exports.merge = void 0;
 const core = __importStar(__webpack_require__(840));
 const github = __importStar(__webpack_require__(837));
 const fs_1 = __webpack_require__(747);
@@ -10096,6 +10096,24 @@ function getOctokit() {
     return github.getOctokit(token);
 }
 exports.getOctokit = getOctokit;
+function containsInBranch(owner, repo, branch, target) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const octokit = getOctokit();
+        try {
+            const response = yield octokit.request(`GET /repos/${owner}/${repo}/compare/${branch}...${target}`);
+            const data = response.data;
+            if (data.hasOwnProperty('status')) {
+                const status = data.status;
+                return status === 'behind' || status === 'identical';
+            }
+            return false;
+        }
+        catch (_a) {
+            return false;
+        }
+    });
+}
+exports.containsInBranch = containsInBranch;
 function getMilestone(owner, repo, milestoneNumberOrTitle) {
     return __awaiter(this, void 0, void 0, function* () {
         const octokit = getOctokit();
@@ -10175,6 +10193,19 @@ function getReleases(owner, repo) {
     });
 }
 exports.getReleases = getReleases;
+function getReleasesByBranch(owner, repo, branch) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const releases = yield getReleases(owner, repo);
+        const result = [];
+        for (const release of releases) {
+            if (yield containsInBranch(owner, repo, branch, release.tag_name)) {
+                result.push(release);
+            }
+        }
+        return result;
+    });
+}
+exports.getReleasesByBranch = getReleasesByBranch;
 function updateRelease(owner, repo, release) {
     return __awaiter(this, void 0, void 0, function* () {
         const octokit = getOctokit();
@@ -10192,6 +10223,26 @@ function updateRelease(owner, repo, release) {
     });
 }
 exports.updateRelease = updateRelease;
+function getTags(owner, repo) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const octokit = getOctokit();
+        return yield octokit.paginate(`GET /repos/${owner}/${repo}/tags`);
+    });
+}
+exports.getTags = getTags;
+function getTagsByBranch(owner, repo, branch) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const tags = yield getTags(owner, repo);
+        const result = [];
+        for (const tag of tags) {
+            if (yield containsInBranch(owner, repo, branch, tag.name)) {
+                result.push(tag);
+            }
+        }
+        return result;
+    });
+}
+exports.getTagsByBranch = getTagsByBranch;
 function dispatch(owner, repo, eventType, payload) {
     return __awaiter(this, void 0, void 0, function* () {
         const octokit = getOctokit();
