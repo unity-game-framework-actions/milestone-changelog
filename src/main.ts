@@ -8,7 +8,7 @@ async function run(): Promise<void> {
   try {
     const milestone = core.getInput('milestone', {required: true})
     const repository = utility.getRepository()
-    const config = await utility.readConfig()
+    const config = await utility.readConfigAny()
     const result = await action.createChangelog(repository.owner, repository.repo, milestone, config)
 
     await utility.setOutput(result)
