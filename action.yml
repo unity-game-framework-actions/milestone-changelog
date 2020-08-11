@@ -13,7 +13,7 @@ inputs:
     default: ${{ github.repository }}
     required: true
   config:
-    description: 'Path to file or config value with generate settings. (Possible config representation types: "Json" or "Yaml".)'
+    description: 'Path to file or config as value with generate settings. (Possible representation types: "Json" or "Yaml".)'
     default: .github/milestone-changelog.yml
     required: true
   outputType:
