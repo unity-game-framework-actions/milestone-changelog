@@ -16,14 +16,9 @@ inputs:
     description: 'Path to file or config as value with generate settings. (Possible representation types: "Json" or "Yaml".)'
     default: .github/milestone-changelog.yml
     required: true
-  outputType:
-    description: 'Type of result output, possible values "action", "file" or "all".'
-    default: action
-    required: true
-  outputPath:
-    description: 'Path of output file.'
-    default: ${{ github.action }}
-    required: true
+  output:
+    description: 'Path to output result as file.'
+    required: false
 outputs:
   result:
     description: 'Action result.'

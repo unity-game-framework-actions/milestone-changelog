@@ -149,9 +149,13 @@ export async function getInput(): Promise<any> {
 }
 
 export async function setOutput(value: string) {
-  const type = core.getInput('outputType', {required: true})
+  core.setOutput('result', value)
 
-  await setOutputByType(type, value)
+  const output = core.getInput('output')
+
+  if (output !== '') {
+    await write(output, value)
+  }
 }
 
 export async function setOutputByType(type: string, value: string) {

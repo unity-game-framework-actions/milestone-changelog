@@ -10087,8 +10087,11 @@ function getInput() {
 exports.getInput = getInput;
 function setOutput(value) {
     return __awaiter(this, void 0, void 0, function* () {
-        const type = core.getInput('outputType', { required: true });
-        yield setOutputByType(type, value);
+        core.setOutput('result', value);
+        const output = core.getInput('output');
+        if (output !== '') {
+            yield write(output, value);
+        }
     });
 }
 exports.setOutput = setOutput;
