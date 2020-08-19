@@ -3760,13 +3760,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createChangelog = void 0;
 const utility = __importStar(__webpack_require__(880));
-function createChangelog(owner, repo, milestoneNumberOrTitle, config) {
+function createChangelog(owner, repo, milestoneNumberOrTitle, config, context) {
     return __awaiter(this, void 0, void 0, function* () {
-        return yield formatChangelog(owner, repo, milestoneNumberOrTitle, config);
+        return yield formatChangelog(owner, repo, milestoneNumberOrTitle, config, context);
     });
 }
 exports.createChangelog = createChangelog;
-function formatChangelog(owner, repo, milestoneNumberOrTitle, config) {
+function formatChangelog(owner, repo, milestoneNumberOrTitle, config, context) {
     return __awaiter(this, void 0, void 0, function* () {
         let format = '';
         if (config.body !== '') {
@@ -3774,9 +3774,10 @@ function formatChangelog(owner, repo, milestoneNumberOrTitle, config) {
                 const milestone = yield utility.getMilestone(owner, repo, milestoneNumberOrTitle);
                 const groups = yield getGroups(owner, repo, milestone.number, config);
                 const values = {
+                    context: context,
                     milestone: milestone,
                     groups: groups,
-                    groupsFormatted: formatGroups(groups, config, milestone)
+                    groupsFormatted: formatGroups(groups, config, context, milestone)
                 };
                 format += utility.formatValues(config.body, values);
             }
@@ -3788,23 +3789,25 @@ function formatChangelog(owner, repo, milestoneNumberOrTitle, config) {
         return format;
     });
 }
-function formatGroups(groups, config, milestone) {
+function formatGroups(groups, config, context, milestone) {
     let format = '';
     for (const group of groups) {
         const values = {
+            context: context,
             milestone: milestone,
             groups: groups,
             group: group,
-            issuesFormatted: formatIssues(group.issues, config, milestone, groups, group)
+            issuesFormatted: formatIssues(group.issues, config, context, milestone, groups, group)
         };
         format += utility.formatValues(config.group, values);
     }
     return format;
 }
-function formatIssues(issues, config, milestone, groups, group) {
+function formatIssues(issues, config, context, milestone, groups, group) {
     let format = '';
     for (const issue of issues) {
         const values = {
+            context: context,
             milestone: milestone,
             groups: groups,
             group: group,
@@ -5090,7 +5093,8 @@ function run() {
             const milestone = core.getInput('milestone', { required: true });
             const repository = utility.getRepository();
             const config = yield utility.readConfigAny();
-            const result = yield action.createChangelog(repository.owner, repository.repo, milestone, config);
+            const context = yield utility.getContextAny();
+            const result = yield action.createChangelog(repository.owner, repository.repo, milestone, config, context);
             yield utility.setOutput(result);
         }
         catch (error) {
@@ -9920,7 +9924,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.dispatch = exports.getTagsByBranch = exports.getTags = exports.updateRelease = exports.getReleasesByBranch = exports.getReleases = exports.getRelease = exports.updateContent = exports.getMilestoneIssues = exports.getMilestones = exports.getMilestone = exports.getIssue = exports.containsInBranch = exports.getOctokit = exports.formatDate = exports.getOwnerAndRepo = exports.getRepository = exports.setValue = exports.getValue = exports.indent = exports.formatValues = exports.normalize = exports.setOutputFile = exports.setOutputAction = exports.setOutputByType = exports.setOutput = exports.getInput = exports.getInputAny = exports.parse = exports.parseAny = exports.format = exports.write = exports.writeData = exports.read = exports.readData = exports.readDataAny = exports.getDataAny = exports.readConfig = exports.readConfigAny = exports.merge = exports.exists = void 0;
+exports.dispatch = exports.getTagsByBranch = exports.getTags = exports.updateRelease = exports.getReleasesByBranch = exports.getReleases = exports.getRelease = exports.updateContent = exports.getMilestoneIssues = exports.getMilestones = exports.getMilestone = exports.getIssue = exports.containsInBranch = exports.getOctokit = exports.formatDate = exports.getOwnerAndRepo = exports.getRepository = exports.setValue = exports.getValue = exports.indent = exports.formatValues = exports.normalize = exports.setOutputFile = exports.setOutputAction = exports.setOutputByType = exports.setOutput = exports.getInput = exports.getInputAny = exports.getContextAny = exports.parse = exports.parseAny = exports.format = exports.write = exports.writeData = exports.read = exports.readData = exports.readDataAny = exports.getDataAny = exports.readConfig = exports.readConfigAny = exports.merge = exports.exists = void 0;
 const core = __importStar(__webpack_require__(840));
 const github = __importStar(__webpack_require__(837));
 const fs_1 = __webpack_require__(747);
@@ -10061,6 +10065,14 @@ function parse(value, type) {
     }
 }
 exports.parse = parse;
+function getContextAny() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const context = core.getInput('context', { required: true });
+        const result = yield getDataAny(context);
+        return result.data;
+    });
+}
+exports.getContextAny = getContextAny;
 function getInputAny() {
     return __awaiter(this, void 0, void 0, function* () {
         const input = core.getInput('input', { required: true });

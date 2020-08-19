@@ -1,5 +1,6 @@
 # Body format of release changelog.
 # Available values:
+#   context: Context object passed into action as 'context' parameter.
 #   milestone: Milestone object. (Read about milestone object: https://docs.github.com/en/rest/reference/issues#get-a-milestone.)
 #   groups: Array of the group objects. (Read about group object below.)
 #   groupsFormatted: Formatted groups as text.
@@ -23,6 +24,7 @@ empty: |
 
 # Group format of issues.
 # Available values:
+#   context: Context object passed into action as 'context' parameter.
 #   milestone: Milestone object. (Same as milestone in body.)
 #   groups: Array of the group objects. (Same as groups in body.)
 #   group: Group object. (Read about group in body description.)
@@ -34,6 +36,7 @@ group: |
 
 # Issue format from group.
 # Available values:
+#   context: Context object passed into action as 'context' parameter.
 #   milestone: Milestone object. (Same as 'milestone' in body.)
 #   groups: Array of the group objects. (Same as 'groups' in body.)
 #   group: Group object. (Read about 'group' in body description.)
