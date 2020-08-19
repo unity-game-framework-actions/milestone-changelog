@@ -1,6 +1,7 @@
 {
   "name": "milestone-changelog",
   "version": "0.1.0",
+  "displayName": "Milestone Changelog",
   "description": "Creates changelog based on milestone.",
   "main": "lib/main.js",
   "scripts": {
