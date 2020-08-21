@@ -16,6 +16,10 @@ inputs:
     description: 'Path to file or config as value with generate settings. (Possible representation types: "Json" or "Yaml".)'
     default: .github/milestone-changelog.yml
     required: true
+  context:
+    description: 'Context can be specific value or file path, and can be accessed in text formatting context. (Possible representation types: "Json" or "Yaml".)'
+    default: '{}'
+    required: true
   output:
     description: 'Path to output result as file.'
     required: false
