@@ -9924,7 +9924,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.dispatch = exports.getTagsByBranch = exports.getTags = exports.updateRelease = exports.getReleasesByBranch = exports.getReleases = exports.getRelease = exports.updateContent = exports.getMilestoneIssues = exports.getMilestones = exports.getMilestone = exports.getIssue = exports.containsInBranch = exports.getOctokit = exports.formatDate = exports.getOwnerAndRepo = exports.getRepository = exports.setValue = exports.getValue = exports.indent = exports.formatValues = exports.normalize = exports.setOutputFile = exports.setOutputAction = exports.setOutputByType = exports.setOutput = exports.getInput = exports.getInputAny = exports.getContextAny = exports.parse = exports.parseAny = exports.format = exports.write = exports.writeData = exports.read = exports.readData = exports.readDataAny = exports.getDataAny = exports.readConfig = exports.readConfigAny = exports.merge = exports.exists = void 0;
+exports.dispatch = exports.getTagsByBranch = exports.getTags = exports.updateRelease = exports.getReleasesByBranch = exports.getReleases = exports.getRelease = exports.updateContent = exports.getMilestoneIssues = exports.getMilestones = exports.getMilestone = exports.getIssue = exports.containsInBranch = exports.getOctokit = exports.formatDate = exports.getOwnerAndRepo = exports.getRepository = exports.setValue = exports.getValue = exports.indent = exports.formatValues = exports.normalize = exports.setOutputFile = exports.setOutputAction = exports.setOutputByType = exports.setOutput = exports.getInput = exports.getInputAny = exports.getContextAny = exports.parse = exports.parseAny = exports.format = exports.write = exports.writeData = exports.read = exports.readData = exports.readDataAny = exports.getDataAny = exports.readConfig = exports.readConfigAny = exports.merge = exports.exists = exports.isInteger = void 0;
 const core = __importStar(__webpack_require__(840));
 const github = __importStar(__webpack_require__(837));
 const fs_1 = __webpack_require__(747);
@@ -9933,6 +9933,10 @@ const yaml = __importStar(__webpack_require__(604));
 const eol = __importStar(__webpack_require__(638));
 const indent_string_1 = __importDefault(__webpack_require__(110));
 const object_path_1 = __importDefault(__webpack_require__(461));
+function isInteger(value) {
+    return /^\d+$/.test(value);
+}
+exports.isInteger = isInteger;
 function exists(path) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -10233,16 +10237,21 @@ function getMilestone(owner, repo, milestoneNumberOrTitle) {
     return __awaiter(this, void 0, void 0, function* () {
         const octokit = getOctokit();
         try {
-            const response = yield octokit.request(`GET /repos/${owner}/${repo}/milestones/${milestoneNumberOrTitle}`);
-            return response.data;
+            if (isInteger(milestoneNumberOrTitle)) {
+                const response = yield octokit.request(`GET /repos/${owner}/${repo}/milestones/${milestoneNumberOrTitle}`);
+                return response.data;
+            }
+            else {
+                const milestones = yield octokit.paginate(`GET /repos/${owner}/${repo}/milestones?state=all`);
+                for (const milestone of milestones) {
+                    if (milestone.title === milestoneNumberOrTitle) {
+                        return milestone;
+                    }
+                }
+                throw `Milestone not found by the specified title: '${milestoneNumberOrTitle}'.`;
+            }
         }
         catch (_a) {
-            const milestones = yield octokit.paginate(`GET /repos/${owner}/${repo}/milestones?state=all`);
-            for (const milestone of milestones) {
-                if (milestone.title === milestoneNumberOrTitle) {
-                    return milestone;
-                }
-            }
             throw `Milestone not found by the specified number or title: '${milestoneNumberOrTitle}'.`;
         }
     });
@@ -10294,17 +10303,17 @@ function getRelease(owner, repo, idOrTag) {
     return __awaiter(this, void 0, void 0, function* () {
         const octokit = getOctokit();
         try {
-            const response = yield octokit.request(`GET /repos/${owner}/${repo}/releases/${idOrTag}`);
-            return response.data;
-        }
-        catch (_a) {
-            try {
+            if (isInteger(idOrTag)) {
+                const response = yield octokit.request(`GET /repos/${owner}/${repo}/releases/${idOrTag}`);
+                return response.data;
+            }
+            else {
                 const response = yield octokit.request(`GET /repos/${owner}/${repo}/releases/tags/${idOrTag}`);
                 return response.data;
             }
-            catch (_b) {
-                throw `Release by the specified id or tag name not found: '${idOrTag}'.`;
-            }
+        }
+        catch (_a) {
+            throw `Release by the specified id or tag name not found: '${idOrTag}'.`;
         }
     });
 }
