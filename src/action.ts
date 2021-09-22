@@ -61,7 +61,7 @@ function formatIssues(issues: any[], config: any, context: any, milestone: any, 
 
     format += utility.formatValues(config.issue, values)
 
-    if (config.issueBody && issue.body !== '') {
+    if (config.issueBody && issue.body !== '' && issue.body != null) {
       const body = utility.indent(issue.body.trim(), 4)
 
       format += `${body}\n`
