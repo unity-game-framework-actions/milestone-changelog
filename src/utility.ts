@@ -207,11 +207,7 @@ export function formatValues(value: string, values: any): string {
     for (const match of matches) {
       if (match !== '') {
         const path = match.substr(1, match.length - 2)
-        let replace = getValue(values, path)
-
-        if (replace == null) {
-          replace = ''
-        }
+        const replace = getValue(values, path)
 
         value = value.replace(match, replace)
       }
@@ -301,6 +297,30 @@ export async function getIssue(owner: string, repo: string, number: string): Pro
   const response = await octokit.request(`GET /repos/${owner}/${repo}/issues/${number}`)
 
   return response.data
+}
+
+export async function tryGetMilestone(owner: string, repo: string, milestoneNumberOrTitle: string): Promise<any> {
+  const octokit = getOctokit()
+
+  try {
+    if (isInteger(milestoneNumberOrTitle)) {
+      const response = await octokit.request(`GET /repos/${owner}/${repo}/milestones/${milestoneNumberOrTitle}`)
+
+      return response.data
+    } else {
+      const milestones = await octokit.paginate(`GET /repos/${owner}/${repo}/milestones?state=all`)
+
+      for (const milestone of milestones) {
+        if (milestone.title === milestoneNumberOrTitle) {
+          return milestone
+        }
+      }
+
+      return null
+    }
+  } catch {
+    return null
+  }
 }
 
 export async function getMilestone(owner: string, repo: string, milestoneNumberOrTitle: string): Promise<any> {
