@@ -438,7 +438,10 @@ function formatValues(value, values) {
         for (const match of matches) {
             if (match !== '') {
                 const path = match.substr(1, match.length - 2);
-                const replace = getValue(values, path);
+                let replace = getValue(values, path);
+                if (replace == null) {
+                    replace = '';
+                }
                 value = value.replace(match, replace);
             }
         }
