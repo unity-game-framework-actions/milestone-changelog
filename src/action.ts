@@ -8,21 +8,16 @@ async function formatChangelog(owner: string, repo: string, milestoneNumberOrTit
   let format = ''
 
   if (config.body !== '') {
-    try {
-      const milestone = await utility.getMilestone(owner, repo, milestoneNumberOrTitle)
-      const groups = await getGroups(owner, repo, milestone.number, config)
-      const values = {
-        context: context,
-        milestone: milestone,
-        groups: groups,
-        groupsFormatted: formatGroups(groups, config, context, milestone)
-      }
-
-      format += utility.formatValues(config.body, values)
-    } catch {
-      format += config.empty
+    const milestone = await utility.getMilestone(owner, repo, milestoneNumberOrTitle)
+    const groups = await getGroups(owner, repo, milestone.number, config)
+    const values = {
+      context: context,
+      milestone: milestone,
+      groups: groups,
+      groupsFormatted: formatGroups(groups, config, context, milestone)
     }
 
+    format += utility.formatValues(config.body, values)
     format = utility.normalize(format)
   }
 
