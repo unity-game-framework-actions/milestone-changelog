@@ -47,20 +47,15 @@ function formatChangelog(owner, repo, milestoneNumberOrTitle, config, context) {
     return __awaiter(this, void 0, void 0, function* () {
         let format = '';
         if (config.body !== '') {
-            try {
-                const milestone = yield utility.getMilestone(owner, repo, milestoneNumberOrTitle);
-                const groups = yield getGroups(owner, repo, milestone.number, config);
-                const values = {
-                    context: context,
-                    milestone: milestone,
-                    groups: groups,
-                    groupsFormatted: formatGroups(groups, config, context, milestone)
-                };
-                format += utility.formatValues(config.body, values);
-            }
-            catch (_a) {
-                format += config.empty;
-            }
+            const milestone = yield utility.getMilestone(owner, repo, milestoneNumberOrTitle);
+            const groups = yield getGroups(owner, repo, milestone.number, config);
+            const values = {
+                context: context,
+                milestone: milestone,
+                groups: groups,
+                groupsFormatted: formatGroups(groups, config, context, milestone)
+            };
+            format += utility.formatValues(config.body, values);
             format = utility.normalize(format);
         }
         return format;
